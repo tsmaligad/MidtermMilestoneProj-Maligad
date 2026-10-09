@@ -1,40 +1,60 @@
-const addIngredientButton = document.getElementById('addIngredient')
-const ingredientsContainer = document.getElementById('ingredients')
+const addIngredientButton = document.getElementById('addIngredient');
+const ingredientsContainer = document.getElementById('ingredients');
 
 if (addIngredientButton && ingredientsContainer) {
     addIngredientButton.addEventListener('click', function () {
-        const input = document.createElement('input')
+        const input = document.createElement('input');
 
-        input.type = 'text'
-        input.name = 'ingredients[]'
-        input.required = true
-        input.maxLength = 255
-        input.placeholder = 'Another ingredient'
+        input.type = 'text';
+        input.name = 'ingredients[]';
+        input.placeholder = 'e.g. 2 cups flour';
+        input.maxLength = 255;
+        input.required = true;
 
-        ingredientsContainer.appendChild(input)
-    })
+        ingredientsContainer.appendChild(input);
+    });
 }
 
-const favoriteButton = document.querySelector('.favorite-button')
+const heartButtons = document.querySelectorAll('.heart-button');
 
-if (favoriteButton) {
-    favoriteButton.addEventListener('click', async function () {
-        const recipeId = favoriteButton.dataset.recipeId
+heartButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+        const recipeId = button.dataset.recipeId;
 
-        const formData = new FormData()
-        formData.append('recipe_id', recipeId)
+        button.disabled = true;
 
-        const response = await fetch('toggle_favorite.php', {
+        fetch('toggle_favorite.php', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'recipe_id=' + encodeURIComponent(recipeId)
         })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Request failed');
+            }
 
-        const result = await response.json()
+            return response.json();
+        })
+        .then(function (data) {
+            if (!data.success) {
+                throw new Error(data.message || 'Unable to update favorite');
+            }
 
-        if (result.success) {
-            favoriteButton.textContent = result.favorite
-                ? 'Remove Favorite'
-                : 'Save Favorite'
-        }
-    })
-}
+            if (data.favorited) {
+                button.textContent = '♥';
+                button.classList.add('active');
+            } else {
+                button.textContent = '♡';
+                button.classList.remove('active');
+            }
+        })
+        .catch(function (error) {
+            alert('Unable to update favorite.');
+        })
+        .finally(function () {
+            button.disabled = false;
+        });
+    });
+});

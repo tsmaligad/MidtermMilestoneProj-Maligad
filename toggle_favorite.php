@@ -6,14 +6,32 @@ require 'classes/Favorite.php';
 
 header('Content-Type: application/json');
 
-$recipeId = filter_var(
-    $_POST['recipe_id'] ?? null,
+$recipeId = filter_input(
+    INPUT_POST,
+    'recipe_id',
     FILTER_VALIDATE_INT
 );
 
 if (!$recipeId) {
     echo json_encode([
-        'success' => false
+        'success' => false,
+        'message' => 'Invalid recipe.'
+    ]);
+    exit;
+}
+
+$stmt = $pdo->prepare(
+    'SELECT id FROM recipes WHERE id = :id'
+);
+
+$stmt->execute([
+    ':id' => $recipeId
+]);
+
+if (!$stmt->fetch()) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Recipe not found.'
     ]);
     exit;
 }
@@ -23,19 +41,27 @@ $favoriteModel = new Favorite($pdo);
 $userId = $_SESSION['user_id'];
 
 if ($favoriteModel->exists($userId, $recipeId)) {
-    $favoriteModel->remove($userId, $recipeId);
+    $favoriteModel->remove(
+        $userId,
+        $recipeId
+    );
 
     echo json_encode([
         'success' => true,
-        'favorite' => false
+        'favorited' => false
     ]);
 
     exit;
 }
 
-$favoriteModel->add($userId, $recipeId);
+$favoriteModel->add(
+    $userId,
+    $recipeId
+);
 
 echo json_encode([
     'success' => true,
-    'favorite' => true
+    'favorited' => true
 ]);
+
+exit;

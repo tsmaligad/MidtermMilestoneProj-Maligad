@@ -73,7 +73,8 @@ class Recipe
     public function getIngredients(int $recipeId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT * FROM ingredients
+            'SELECT *
+             FROM ingredients
              WHERE recipe_id = :recipe_id
              ORDER BY id ASC'
         );
@@ -92,6 +93,7 @@ class Recipe
         string $description,
         string $steps,
         string $tags,
+        ?string $image,
         array $ingredients
     ): int {
         $this->pdo->beginTransaction();
@@ -99,9 +101,9 @@ class Recipe
         try {
             $stmt = $this->pdo->prepare(
                 'INSERT INTO recipes
-                (user_id, category_id, title, description, steps, tags)
+                (user_id, category_id, title, description, steps, tags, image)
                 VALUES
-                (:user_id, :category_id, :title, :description, :steps, :tags)'
+                (:user_id, :category_id, :title, :description, :steps, :tags, :image)'
             );
 
             $stmt->execute([
@@ -110,14 +112,17 @@ class Recipe
                 ':title' => $title,
                 ':description' => $description,
                 ':steps' => $steps,
-                ':tags' => $tags
+                ':tags' => $tags,
+                ':image' => $image
             ]);
 
             $recipeId = (int) $this->pdo->lastInsertId();
 
             $ingredientStmt = $this->pdo->prepare(
-                'INSERT INTO ingredients (recipe_id, ingredient)
-                 VALUES (:recipe_id, :ingredient)'
+                'INSERT INTO ingredients
+                (recipe_id, ingredient)
+                VALUES
+                (:recipe_id, :ingredient)'
             );
 
             foreach ($ingredients as $ingredient) {
@@ -130,6 +135,95 @@ class Recipe
             $this->pdo->commit();
 
             return $recipeId;
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function update(
+        int $id,
+        int $userId,
+        int $categoryId,
+        string $title,
+        string $description,
+        string $steps,
+        string $tags,
+        ?string $image,
+        array $ingredients
+    ): bool {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt = $this->pdo->prepare(
+                'UPDATE recipes
+                 SET category_id = :category_id,
+                     title = :title,
+                     description = :description,
+                     steps = :steps,
+                     tags = :tags,
+                     image = :image,
+                     is_edited = 1
+                 WHERE id = :id
+                 AND user_id = :user_id'
+            );
+
+            $stmt->execute([
+                ':category_id' => $categoryId,
+                ':title' => $title,
+                ':description' => $description,
+                ':steps' => $steps,
+                ':tags' => $tags,
+                ':image' => $image,
+                ':id' => $id,
+                ':user_id' => $userId
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                $checkStmt = $this->pdo->prepare(
+                    'SELECT id
+                     FROM recipes
+                     WHERE id = :id
+                     AND user_id = :user_id'
+                );
+
+                $checkStmt->execute([
+                    ':id' => $id,
+                    ':user_id' => $userId
+                ]);
+
+                if (!$checkStmt->fetch()) {
+                    $this->pdo->rollBack();
+                    return false;
+                }
+            }
+
+            $deleteStmt = $this->pdo->prepare(
+                'DELETE FROM ingredients
+                 WHERE recipe_id = :recipe_id'
+            );
+
+            $deleteStmt->execute([
+                ':recipe_id' => $id
+            ]);
+
+            $ingredientStmt = $this->pdo->prepare(
+                'INSERT INTO ingredients
+                (recipe_id, ingredient)
+                VALUES
+                (:recipe_id, :ingredient)'
+            );
+
+            foreach ($ingredients as $ingredient) {
+                $ingredientStmt->execute([
+                    ':recipe_id' => $id,
+                    ':ingredient' => $ingredient
+                ]);
+            }
+
+            $this->pdo->commit();
+
+            return true;
         } catch (Throwable $e) {
             $this->pdo->rollBack();
             throw $e;

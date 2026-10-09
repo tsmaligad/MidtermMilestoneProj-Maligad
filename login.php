@@ -15,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($email === '' || $password === '') {
         $error = 'Email and password are required.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Invalid email address.';
     } elseif (!$userModel->login($email, $password)) {
         $error = 'Invalid email or password.';
     } else {
@@ -25,42 +27,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login | Miffy Cafe</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="auth-page">
 
-<div class="form-card">
-    <h1>Whisk & Share</h1>
+<div class="auth-wrapper">
 
-    <?php if ($error): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
+    <div class="auth-image-panel">
+        <img src="images/login-baking.jpg" alt="Baking">
 
-    <form method="POST">
-        <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value="<?= htmlspecialchars($email) ?>"
-            required
-        >
+        <div class="auth-image-overlay">
+            <h1>Miffy Cafe</h1>
+            <p>Come back and bake something good.</p>
+        </div>
+    </div>
 
-        <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-        >
+    <div class="auth-form-panel">
 
-        <button type="submit">Login</button>
-    </form>
+        <div class="auth-form-content">
 
-    <p>No account? <a href="register.php">Register</a></p>
+            <div class="auth-heading">
+                <p class="auth-eyebrow">WELCOME BACK</p>
+                <h2>Login</h2>
+                <p class="auth-subtitle">
+                    Sign in to discover, save, and share baking recipes with the community.
+                </p>
+            </div>
+
+            <?php if ($error): ?>
+                <div class="auth-error">
+                    <?= htmlspecialchars($error) ?>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" class="auth-form">
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        value="<?= htmlspecialchars($email) ?>"
+                        required
+                        maxlength="255"
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button type="submit" class="auth-submit">
+                    Login
+                </button>
+
+            </form>
+
+            <p class="auth-switch">
+                Don't have an account?
+                <a href="register.php">Create Account</a>
+            </p>
+
+        </div>
+
+    </div>
+
 </div>
 
 </body>

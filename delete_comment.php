@@ -2,34 +2,39 @@
 
 require 'auth.php';
 require 'db.php';
-require 'classes/Comment.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: index.php');
     exit;
 }
 
-$id = filter_var(
-    $_POST['id'] ?? null,
+$commentId = filter_input(
+    INPUT_POST,
+    'id',
     FILTER_VALIDATE_INT
 );
 
-$recipeId = filter_var(
-    $_POST['recipe_id'] ?? null,
+$recipeId = filter_input(
+    INPUT_POST,
+    'recipe_id',
     FILTER_VALIDATE_INT
 );
 
-if (!$id || !$recipeId) {
+if (!$commentId || !$recipeId) {
     header('Location: index.php');
     exit;
 }
 
-$commentModel = new Comment($pdo);
-
-$commentModel->delete(
-    $id,
-    $_SESSION['user_id']
+$stmt = $pdo->prepare(
+    'DELETE FROM comments
+     WHERE id = :id
+     AND user_id = :user_id'
 );
+
+$stmt->execute([
+    ':id' => $commentId,
+    ':user_id' => $_SESSION['user_id']
+]);
 
 header('Location: recipe.php?id=' . $recipeId);
 exit;

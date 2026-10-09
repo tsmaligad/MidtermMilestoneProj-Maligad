@@ -6,7 +6,11 @@ require 'classes/Recipe.php';
 require 'classes/Comment.php';
 require 'classes/Favorite.php';
 
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+$id = filter_input(
+    INPUT_GET,
+    'id',
+    FILTER_VALIDATE_INT
+);
 
 if (!$id) {
     header('Location: index.php');
@@ -28,44 +32,77 @@ $recipeModel->incrementView($id);
 
 $recipe = $recipeModel->getById($id);
 
-$ingredients = $recipeModel->getIngredients($id);
-$comments = $commentModel->getByRecipe($id);
+$ingredients =
+    $recipeModel->getIngredients($id);
 
-$isFavorite = $favoriteModel->exists(
-    $_SESSION['user_id'],
-    $id
-);
+$comments =
+    $commentModel->getByRecipe($id);
+
+$isFavorite =
+    $favoriteModel->exists(
+        $_SESSION['user_id'],
+        $id
+    );
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-    <title><?= htmlspecialchars($recipe['title']) ?></title>
+    <title>
+        <?= htmlspecialchars($recipe['title']) ?>
+    </title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <nav>
-    <a href="index.php">Home</a>
-    <a href="favorites.php">Favorites</a>
-    <a href="logout.php">Logout</a>
+    <h2>Miffy Cafe</h2>
+
+    <div>
+        <a href="index.php">
+            Home
+        </a>
+
+        <a href="favorites.php">
+            Favorites
+        </a>
+
+        <a href="logout.php">
+            Logout
+        </a>
+    </div>
 </nav>
 
 <main class="recipe-detail">
 
-    <h1><?= htmlspecialchars($recipe['title']) ?></h1>
+    <?php if ($recipe['image']): ?>
+
+        <img
+            class="recipe-detail-image"
+            src="images/recipes/<?= htmlspecialchars($recipe['image']) ?>"
+            alt="<?= htmlspecialchars($recipe['title']) ?>"
+        >
+
+    <?php endif; ?>
+
+    <h1>
+        <?= htmlspecialchars($recipe['title']) ?>
+    </h1>
 
     <?php if ($recipe['is_edited']): ?>
-        <span class="edited">(edited)</span>
+        <span class="edited">
+            (edited)
+        </span>
     <?php endif; ?>
 
     <p>
-        By <?= htmlspecialchars($recipe['author_name']) ?>
+        By
+        <?= htmlspecialchars($recipe['author_name']) ?>
     </p>
 
     <p>
@@ -93,11 +130,15 @@ $isFavorite = $favoriteModel->exists(
     <h3>Ingredients</h3>
 
     <ul>
+
         <?php foreach ($ingredients as $ingredient): ?>
+
             <li>
                 <?= htmlspecialchars($ingredient['ingredient']) ?>
             </li>
+
         <?php endforeach; ?>
+
     </ul>
 
     <h3>Steps</h3>
@@ -110,37 +151,56 @@ $isFavorite = $favoriteModel->exists(
 
         <h3>Tags</h3>
 
-        <?php foreach (explode(',', $recipe['tags']) as $tag): ?>
-            <span class="tag">
-                #<?= htmlspecialchars(trim($tag)) ?>
-            </span>
-        <?php endforeach; ?>
+        <div class="recipe-tags">
+
+            <?php foreach (explode(',', $recipe['tags']) as $tag): ?>
+
+                <span class="tag">
+                    #<?= htmlspecialchars(trim($tag)) ?>
+                </span>
+
+            <?php endforeach; ?>
+
+        </div>
 
     <?php endif; ?>
 
     <?php if ($recipe['user_id'] == $_SESSION['user_id']): ?>
 
-        <p>
+        <div class="owner-actions">
+
             <a href="edit_recipe.php?id=<?= $recipe['id'] ?>">
                 Edit Recipe
             </a>
-        </p>
 
-        <form method="POST" action="delete_recipe.php">
-            <input
-                type="hidden"
-                name="id"
-                value="<?= $recipe['id'] ?>"
+            <form
+                method="POST"
+                action="delete_recipe.php"
             >
 
-            <button type="submit">
-                Delete Recipe
-            </button>
-        </form>
+                <input
+                    type="hidden"
+                    name="id"
+                    value="<?= $recipe['id'] ?>"
+                >
+
+                <button type="submit">
+                    Delete Recipe
+                </button>
+
+            </form>
+
+        </div>
 
     <?php endif; ?>
 
     <h2>Comments</h2>
+
+    <?php if (!$comments): ?>
+
+        <p>No comments yet.</p>
+
+    <?php endif; ?>
 
     <?php foreach ($comments as $comment): ?>
 
@@ -155,36 +215,44 @@ $isFavorite = $favoriteModel->exists(
             </p>
 
             <?php if ($comment['is_edited']): ?>
-                <span class="edited">(edited)</span>
+                <span class="edited">
+                    (edited)
+                </span>
             <?php endif; ?>
 
             <?php if ($comment['user_id'] == $_SESSION['user_id']): ?>
 
-                <a href="edit_comment.php?id=<?= $comment['id'] ?>">
-                    Edit
-                </a>
+                <div class="comment-actions">
 
-                <form
-                    method="POST"
-                    action="delete_comment.php"
-                    class="inline"
-                >
-                    <input
-                        type="hidden"
-                        name="id"
-                        value="<?= $comment['id'] ?>"
+                    <a href="edit_comment.php?id=<?= $comment['id'] ?>">
+                        Edit
+                    </a>
+
+                    <form
+                        method="POST"
+                        action="delete_comment.php"
+                        class="inline"
                     >
 
-                    <input
-                        type="hidden"
-                        name="recipe_id"
-                        value="<?= $recipe['id'] ?>"
-                    >
+                        <input
+                            type="hidden"
+                            name="id"
+                            value="<?= $comment['id'] ?>"
+                        >
 
-                    <button type="submit">
-                        Delete
-                    </button>
-                </form>
+                        <input
+                            type="hidden"
+                            name="recipe_id"
+                            value="<?= $recipe['id'] ?>"
+                        >
+
+                        <button type="submit">
+                            Delete
+                        </button>
+
+                    </form>
+
+                </div>
 
             <?php endif; ?>
 
@@ -192,7 +260,11 @@ $isFavorite = $favoriteModel->exists(
 
     <?php endforeach; ?>
 
-    <form method="POST" action="create_comment.php">
+    <form
+        method="POST"
+        action="create_comment.php"
+        class="comment-form"
+    >
 
         <input
             type="hidden"
