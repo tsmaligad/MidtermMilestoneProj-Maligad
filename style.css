@@ -1,0 +1,155 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fff8f0;
+    color: #4a3028;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 8%;
+    background: #7a4b35;
+    color: white;
+}
+
+nav div {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+main {
+    width: 90%;
+    max-width: 1100px;
+    margin: 30px auto;
+}
+
+.form-card {
+    width: 90%;
+    max-width: 450px;
+    margin: 60px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 16px;
+}
+
+.form-card.wide {
+    max-width: 700px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+input,
+textarea,
+select,
+button {
+    width: 100%;
+    padding: 12px;
+    font: inherit;
+    border: 1px solid #d7b8a7;
+    border-radius: 8px;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+button {
+    border: none;
+    background: #9c6044;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.error {
+    color: #b00020;
+}
+
+.search-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.recipe-card,
+.comment,
+.recipe-detail {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+}
+
+.recipe-card a {
+    color: #7a4b35;
+}
+
+.tag {
+    display: inline-block;
+    padding: 5px 8px;
+    margin: 3px;
+    background: #f1ddcf;
+    border-radius: 20px;
+}
+
+.edited {
+    font-size: 12px;
+    color: #777;
+}
+
+.inline {
+    display: inline;
+}
+
+#ingredients {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 800px) {
+    .recipe-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-form {
+        grid-template-columns: 1fr;
+    }
+
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav div {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
